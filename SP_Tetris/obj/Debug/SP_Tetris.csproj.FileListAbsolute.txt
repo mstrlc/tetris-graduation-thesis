@@ -1,0 +1,10 @@
+D:\Drive\programovani\SP_Tetris\SP_Tetris\bin\Debug\SP_Tetris.exe.config
+D:\Drive\programovani\SP_Tetris\SP_Tetris\bin\Debug\SP_Tetris.exe
+D:\Drive\programovani\SP_Tetris\SP_Tetris\bin\Debug\SP_Tetris.pdb
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.csprojAssemblyReference.cache
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.Properties.Resources.resources
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.csproj.GenerateResource.cache
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.csproj.CoreCompileInputs.cache
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.exe
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.pdb
+D:\Drive\programovani\SP_Tetris\SP_Tetris\obj\Debug\SP_Tetris.Form1.resources
