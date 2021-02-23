@@ -17,18 +17,22 @@ namespace SP_Tetris
         {
             PickTetro();
 
+            Var.isPlaced = false;
+
             Var.currentTetroWidth = Var.currentTetro.GetLength(1);
             Var.currentTetroHeight = Var.currentTetro.GetLength(0);
 
             Var.currentTetroxPos = 4;
             Var.currentTetroyPos = 0;
 
+            Var.tetroRotation = 0;
+
             MoveTetro();
         }
         static void PickTetro()
         {
             Random rnd = new Random();
-            int random = rnd.Next(1,8);
+            int random = rnd.Next(1, 8);
 
             switch (random)
             {
@@ -71,15 +75,16 @@ namespace SP_Tetris
 
         public static void TetroFall()
         {
-            if(CheckCollisionDown())
+            if (CheckCollisionDown())
             {
                 Var.currentTetroyPos++;
+                MoveTetro();
             }
             else
             {
                 PlaceTetro();
+                CheckFilledRows();
             }
-            MoveTetro();
         }
 
         public static void TetroMoveLeft()
@@ -124,7 +129,7 @@ namespace SP_Tetris
             }
 
             Var.tempTetro = Var.currentTetro;
-            
+
             Var.currentTetro = newTetro;
 
             if (Var.tetroRotation == 3)
@@ -135,7 +140,7 @@ namespace SP_Tetris
             {
                 Var.tetroRotation++;
             }
-            
+
             //posun pro SRS
             if (Var.currentTetroWidth == 3 || Var.currentTetroHeight == 3) //tetromino je 2x3
             {
@@ -181,7 +186,7 @@ namespace SP_Tetris
                         break;
                 }
             }
-            
+
 
             Var.currentTetroWidth = Var.currentTetro.GetLength(1);
             Var.currentTetroHeight = Var.currentTetro.GetLength(0);
@@ -194,6 +199,18 @@ namespace SP_Tetris
             {
                 TetroRotateCounterClockwise();
             }
+
+            for (int i = 0; i < Var.boardWidth; i++)
+            {
+                for (int j = 0; j < Var.boardHeight; j++)
+                {
+                    if (Var.tetroArray[i, j] != 0 && Var.boardArray[i, j] != 0)
+                    {
+                        TetroRotateCounterClockwise();
+                    }
+                }
+            }
+            MoveTetro();
         }
 
         public static void TetroRotateCounterClockwise()
@@ -232,7 +249,7 @@ namespace SP_Tetris
             {
                 Var.tetroRotation--;
             }
-            
+
             //posun pro SRS
             if (Var.currentTetroWidth == 3 || Var.currentTetroHeight == 3) //tetromino je 2x3
             {
@@ -291,6 +308,18 @@ namespace SP_Tetris
                 TetroRotateClockwise();
             }
 
+            for (int i = 0; i < Var.boardWidth; i++)
+            {
+                for (int j = 0; j < Var.boardHeight; j++)
+                {
+                    if (Var.tetroArray[i, j] != 0 && Var.boardArray[i, j] != 0)
+                    {
+                        TetroRotateClockwise();
+                    }
+                }
+            }
+            MoveTetro();
+
         }
 
         public static void PlaceTetro()
@@ -304,6 +333,52 @@ namespace SP_Tetris
                         Var.boardArray[i, j] = Var.tetroArray[i, j];
                     }
                 }
+            }
+            
+            ClearTetroArray();
+
+            Var.isPlaced = true;
+        }
+
+        public static void CheckFilledRows()
+        {
+            for (int h = 0; h < Var.boardHeight; h++)
+            {
+                bool isFilled = true;
+
+                for (int w = 0; w < Var.boardWidth; w++)
+                {
+                    if (Var.boardArray[w, h] == 0)
+                    {
+                        isFilled = false;
+                    }
+                }
+
+                if(isFilled)
+                {
+                    ClearRow(h);
+                    Var.score += 100;
+                    if(Var.waitTime > 100)
+                    {
+                        Var.waitTime -= 50;
+                    }
+                }
+            }
+        }
+
+        public static void ClearRow(int row)
+        {
+            for (int i = row; i > 0; i--)
+            {
+                for(int j = 0; j < Var.boardWidth; j++)
+                {
+                    Var.boardArray[j, i] = Var.boardArray[j, i - 1];
+                }
+            }
+
+            for (int i = 0; i < Var.boardWidth; i++)
+            {
+                Var.boardArray[i, 0] = 0;
             }
         }
 
@@ -368,9 +443,5 @@ namespace SP_Tetris
 
             return true;
         }
-
-        //public static bool CheckCollisionRotate()
-        //{
-        //}
     }
 }

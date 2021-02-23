@@ -31,13 +31,10 @@ namespace SP_Tetris
         {
             this.components = new System.ComponentModel.Container();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.buttonStart = new System.Windows.Forms.Button();
-            this.buttonFall = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.buttonLeft = new System.Windows.Forms.Button();
-            this.buttonRight = new System.Windows.Forms.Button();
-            this.buttonRotateCounterClockwise = new System.Windows.Forms.Button();
-            this.buttonRotateClockwise = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.labelScore = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -45,101 +42,78 @@ namespace SP_Tetris
             // 
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
+            this.dataGridView1.AllowUserToResizeColumns = false;
+            this.dataGridView1.AllowUserToResizeRows = false;
+            this.dataGridView1.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.Disable;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.dataGridView1.Location = new System.Drawing.Point(13, 13);
+            this.dataGridView1.MultiSelect = false;
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.Size = new System.Drawing.Size(286, 540);
             this.dataGridView1.TabIndex = 0;
             // 
-            // buttonStart
+            // timer1
             // 
-            this.buttonStart.Location = new System.Drawing.Point(363, 13);
-            this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 23);
-            this.buttonStart.TabIndex = 1;
-            this.buttonStart.Text = "start";
-            this.buttonStart.UseVisualStyleBackColor = true;
-            this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
+            this.timer1.Enabled = true;
             // 
-            // buttonFall
+            // label1
             // 
-            this.buttonFall.Location = new System.Drawing.Point(363, 42);
-            this.buttonFall.Name = "buttonFall";
-            this.buttonFall.Size = new System.Drawing.Size(75, 23);
-            this.buttonFall.TabIndex = 2;
-            this.buttonFall.Text = "fall";
-            this.buttonFall.UseVisualStyleBackColor = true;
-            this.buttonFall.Click += new System.EventHandler(this.buttonFall_Click);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(305, 13);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(149, 91);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "OVLÁDÁNÍ\r\nenter - start hry\r\nšipky doleva, doprava - pohyb\r\nšipka dolů - zrychlen" +
+    "í pádu\r\nZ, X - rotace\r\nmezerník - dopad\r\n\r\n";
             // 
-            // buttonLeft
+            // label2
             // 
-            this.buttonLeft.Location = new System.Drawing.Point(326, 84);
-            this.buttonLeft.Name = "buttonLeft";
-            this.buttonLeft.Size = new System.Drawing.Size(75, 23);
-            this.buttonLeft.TabIndex = 3;
-            this.buttonLeft.Text = "left";
-            this.buttonLeft.UseVisualStyleBackColor = true;
-            this.buttonLeft.Click += new System.EventHandler(this.buttonLeft_Click);
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(306, 108);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(44, 13);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "SKÓRE";
             // 
-            // buttonRight
+            // labelScore
             // 
-            this.buttonRight.Location = new System.Drawing.Point(363, 113);
-            this.buttonRight.Name = "buttonRight";
-            this.buttonRight.Size = new System.Drawing.Size(75, 23);
-            this.buttonRight.TabIndex = 4;
-            this.buttonRight.Text = "right";
-            this.buttonRight.UseVisualStyleBackColor = true;
-            this.buttonRight.Click += new System.EventHandler(this.buttonRight_Click);
-            // 
-            // buttonRotateCounterClockwise
-            // 
-            this.buttonRotateCounterClockwise.Location = new System.Drawing.Point(326, 222);
-            this.buttonRotateCounterClockwise.Name = "buttonRotateCounterClockwise";
-            this.buttonRotateCounterClockwise.Size = new System.Drawing.Size(75, 23);
-            this.buttonRotateCounterClockwise.TabIndex = 7;
-            this.buttonRotateCounterClockwise.Text = "rotate ccw";
-            this.buttonRotateCounterClockwise.Click += new System.EventHandler(this.buttonRotateCounterClockwise_Click);
-            // 
-            // buttonRotateClockwise
-            // 
-            this.buttonRotateClockwise.Location = new System.Drawing.Point(363, 193);
-            this.buttonRotateClockwise.Name = "buttonRotateClockwise";
-            this.buttonRotateClockwise.Size = new System.Drawing.Size(75, 23);
-            this.buttonRotateClockwise.TabIndex = 6;
-            this.buttonRotateClockwise.Text = "rotate cw";
-            this.buttonRotateClockwise.UseVisualStyleBackColor = true;
-            this.buttonRotateClockwise.Click += new System.EventHandler(this.buttonRotateClock_Click);
+            this.labelScore.AutoSize = true;
+            this.labelScore.Font = new System.Drawing.Font("SF Mono", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelScore.Location = new System.Drawing.Point(305, 121);
+            this.labelScore.Name = "labelScore";
+            this.labelScore.Size = new System.Drawing.Size(22, 23);
+            this.labelScore.TabIndex = 3;
+            this.labelScore.Text = "0";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(450, 565);
-            this.Controls.Add(this.buttonRotateClockwise);
-            this.Controls.Add(this.buttonRotateCounterClockwise);
-            this.Controls.Add(this.buttonRight);
-            this.Controls.Add(this.buttonLeft);
-            this.Controls.Add(this.buttonFall);
-            this.Controls.Add(this.buttonStart);
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.ClientSize = new System.Drawing.Size(471, 565);
+            this.Controls.Add(this.labelScore);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridView1);
+            this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.Button buttonFall;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Button buttonLeft;
-        private System.Windows.Forms.Button buttonRight;
-        private System.Windows.Forms.Button buttonRotateCounterClockwise;
-        private System.Windows.Forms.Button buttonRotateClockwise;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelScore;
     }
 }
 

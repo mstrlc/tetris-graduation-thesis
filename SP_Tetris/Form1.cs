@@ -17,7 +17,6 @@ namespace SP_Tetris
             public static int boardWidth;           //sirka desky
             public static int boardHeight;          //vyska desky
 
-
             public static int[,] tetroArray;        //pole ve kterem se pohybuje currentTetro
             public static int[,] boardArray;        //pole hry ve kterem jsou uz polozena tetromina
 
@@ -25,15 +24,18 @@ namespace SP_Tetris
             public static int currentTetroWidth;    //sirka desky
             public static int currentTetroHeight;   //vyska desky
 
-            public static int[,] tempTetro;      //mezirkok pouzivane tetromino
-
-
             public static int tetroRotation;
+
+            public static int[,] tempTetro;
 
             public static int currentTetroxPos;     //x souradnice prave pouzivaneho tetromina
             public static int currentTetroyPos;     //y souradnice prave pouzivaneho tetromina
 
-            public static int waitTime;             //cas cekani mezi pohyby, default 500        
+            public static int waitTime;             //cas cekani mezi pohyby, default 500
+            public static int score;
+            public static bool isPlaced;
+
+            public static int[] rowsToClear;
         }
         public Form1()
         {
@@ -49,11 +51,45 @@ namespace SP_Tetris
 
             ClearTetroArray();
             InitializeDGV();
+
+            Var.score = 0;
+
             Draw();
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter:
+                    Start();
+                    break;
+                case Keys.Down:
+                    Fall();
+                    break;
+                case Keys.Left:
+                    MoveLeft();
+                    break;
+                case Keys.Right:
+                    MoveRight();
+                    break;
+                case Keys.Z:
+                    RotateCounterClockwise();
+                    break;
+                case Keys.X:
+                    RotateClockwise();
+                    break;
+                case Keys.Space:
+                    HardDrop();
+                    break;
+            }
+
+            dataGridView1.CurrentCell = dataGridView1.Rows[0].Cells[0];
         }
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
+            
             Start();
         }
 
@@ -85,13 +121,37 @@ namespace SP_Tetris
 
         private void Start()
         {
+            labelScore.Text = Convert.ToString(Var.score);
+
             Game.SpawnTetro();
             Draw();
+            Wait();
+
+            while (!Var.isPlaced)
+            {
+                Fall(); 
+                Draw();
+                Wait();
+            }
+            if (Var.isPlaced)
+            {
+                Start();
+            }    
+            
         }
         private void Fall()
         {
             Game.TetroFall();
             Draw();
+        }
+
+        private void HardDrop()
+        {
+            while(!Var.isPlaced)
+            {
+                Game.TetroFall();
+                Draw();
+            }
         }
 
         private void MoveLeft()
@@ -155,17 +215,40 @@ namespace SP_Tetris
                     dataGridView1.Rows[j].Cells[i].Value = 0;
                     dataGridView1.Rows[j].Cells[i].Value = Var.boardArray[i, j];
 
-                    if (Var.tetroArray[i, j] == 1 || Var.boardArray[i, j] == 1)
+                    if (Var.tetroArray[i, j] != 0)
                     {
-                        dataGridView1.Rows[j].Cells[i].Value = 1;
-                        dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Purple;
+                        dataGridView1.Rows[j].Cells[i].Value = Var.tetroArray[i, j];
                     }
 
-                    if (Convert.ToInt32(dataGridView1.Rows[j].Cells[i].Value) == 0)
+                    switch (Convert.ToInt32(dataGridView1.Rows[j].Cells[i].Value))
                     {
-                        dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Black;
+                        case 0:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Black;
+                            break;
+                        case 1:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Cyan;
+                            break;
+                        case 2:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Orange;
+                            break;
+                        case 3:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Blue;
+                            break;
+                        case 4:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Yellow;
+                            break;
+                        case 5:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Green;
+                            break;
+                        case 6:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Red;
+                            break;
+                        case 7:
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Purple;
+                            break;
                     }
 
+                    dataGridView1.Rows[j].Cells[i].Style.ForeColor = dataGridView1.Rows[j].Cells[i].Style.BackColor;
                 }
             }
         }
