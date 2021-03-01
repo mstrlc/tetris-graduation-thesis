@@ -24,6 +24,10 @@ namespace SP_Tetris
             public static int currentTetroWidth;    //sirka desky
             public static int currentTetroHeight;   //vyska desky
 
+            public static int[,] nextTetro;      //prave pouzivane tetromino
+            public static int nextTetroWidth;    //sirka desky
+            public static int nextTetroHeight;   //vyska desky
+
             public static int tetroRotation;
 
             public static int[,] tempTetro;
@@ -34,11 +38,13 @@ namespace SP_Tetris
             public static int waitTime;             //cas cekani mezi pohyby, default 500
             public static int score;
             public static bool isPlaced;
+            public static bool gameOver;
 
             public static int[] rowsToClear;
         }
         public Form1()
         {
+
             InitializeComponent();
 
             Var.boardWidth = 10;                    //definuje sirku herni desky
@@ -87,45 +93,17 @@ namespace SP_Tetris
             dataGridView1.CurrentCell = dataGridView1.Rows[0].Cells[0];
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
-        {
-            
-            Start();
-        }
-
-        private void buttonFall_Click(object sender, EventArgs e)
-        {
-            Fall();
-        }
-
-        private void buttonLeft_Click(object sender, EventArgs e)
-        {
-            MoveLeft();
-        }
-
-        private void buttonRight_Click(object sender, EventArgs e)
-        {
-            MoveRight();
-        }
-
-        private void buttonRotateClock_Click(object sender, EventArgs e)
-        {
-            RotateClockwise();
-        }
-        private void buttonRotateCounterClockwise_Click(object sender, EventArgs e)
-        {
-            RotateCounterClockwise();
-        }
-
-
-
         private void Start()
         {
             labelScore.Text = Convert.ToString(Var.score);
 
+            Var.gameOver = false;
+
             Game.SpawnTetro();
+            //DrawNext();
             Draw();
             Wait();
+            
 
             while (!Var.isPlaced)
             {
@@ -187,6 +165,29 @@ namespace SP_Tetris
                 }
             }
         }
+
+        public static void ClearBoardArray()
+        {
+            for (int i = 0; i < Var.boardWidth; i++)
+            {
+                for (int j = 0; j < Var.boardHeight; j++)
+                {
+                    Var.boardArray[i, j] = 0;
+                }
+            }
+        }
+
+        public static void ClearCurrentTetro()
+        {
+            for (int i = 0; i < Var.currentTetroHeight; i++)
+            {
+                for (int j = 0; j < Var.currentTetroWidth; j++)
+                {
+                    Var.currentTetro[i, j] = 0;
+                }
+            }
+        }
+
         private void InitializeDGV()
         {
             dataGridView1.RowHeadersVisible = false;
@@ -197,7 +198,7 @@ namespace SP_Tetris
 
             dataGridView1.ColumnCount = Var.boardWidth;
             dataGridView1.RowCount = Var.boardHeight;
-            
+
             for (int i = 0; i < Var.boardWidth; i++)     //nastavi sirku dgv
             {
                 for (int j = 0; j < Var.boardHeight; j++)
@@ -205,9 +206,28 @@ namespace SP_Tetris
                     dataGridView1.Rows[j].Height = dataGridView1.Height / Var.boardHeight;
                 }
             }
+
+            dataGridViewNext.RowHeadersVisible = false;
+            dataGridViewNext.ColumnHeadersVisible = false;
+            dataGridViewNext.ScrollBars = ScrollBars.None;
+
+            dataGridViewNext.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dataGridViewNext.ColumnCount = 4;
+            dataGridViewNext.RowCount = 4;
+
+            for (int i = 0; i < 4; i++)     //nastavi sirku dgv
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    dataGridViewNext.Rows[j].Height = dataGridView1.Height / 4;
+                }
+            }
         }
         private void Draw()
         {
+            dataGridView1.GridColor = Color.Black;
+
             for (int i = 0; i < Var.boardWidth; i++)
             {
                 for (int j = 0; j < Var.boardHeight; j++)
@@ -226,25 +246,25 @@ namespace SP_Tetris
                             dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Black;
                             break;
                         case 1:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Cyan;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(32, 178, 170);
                             break;
                         case 2:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Orange;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(255, 69, 0);
                             break;
                         case 3:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Blue;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(0, 0, 205);
                             break;
                         case 4:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Yellow;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(255, 215, 0);
                             break;
                         case 5:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Green;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(34, 139, 34);
                             break;
                         case 6:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Red;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(178, 34, 34);
                             break;
                         case 7:
-                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.Purple;
+                            dataGridView1.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(128, 0, 128);
                             break;
                     }
 
@@ -252,7 +272,51 @@ namespace SP_Tetris
                 }
             }
         }
-        private void Wait()
+        private void DrawNext()
+        {
+            dataGridViewNext.GridColor = Color.Black;
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    dataGridViewNext.Rows[j].Cells[i].Value = 0;
+                    dataGridViewNext.Rows[j].Cells[i].Value = Var.nextTetro[j, i];
+
+                    switch (Convert.ToInt32(dataGridViewNext.Rows[j].Cells[i].Value))
+                    {
+                        case 0:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.Black;
+                            break;
+                        case 1:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(32, 178, 170);
+                            break;
+                        case 2:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(255, 69, 0);
+                            break;
+                        case 3:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(0, 0, 205);
+                            break;
+                        case 4:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(255, 215, 0);
+                            break;
+                        case 5:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(34, 139, 34);
+                            break;
+                        case 6:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(178, 34, 34);
+                            break;
+                        case 7:
+                            dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.FromArgb(128, 0, 128);
+                            break;
+                    }
+
+                    dataGridViewNext.Rows[j].Cells[i].Style.ForeColor = dataGridViewNext.Rows[j].Cells[i].Style.BackColor;
+            }
+        }
+
+    }
+    private void Wait()
         {
             var timer1 = new System.Windows.Forms.Timer();
             if (Var.waitTime == 0 || Var.waitTime < 0) return;
@@ -273,5 +337,9 @@ namespace SP_Tetris
             }
         }
 
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            timer1.Stop();
+        }
     }
 }

@@ -22,6 +22,9 @@ namespace SP_Tetris
             Var.currentTetroWidth = Var.currentTetro.GetLength(1);
             Var.currentTetroHeight = Var.currentTetro.GetLength(0);
 
+            Var.nextTetroWidth = Var.nextTetro.GetLength(1);
+            Var.nextTetroHeight = Var.nextTetro.GetLength(0);
+
             Var.currentTetroxPos = 4;
             Var.currentTetroyPos = 0;
 
@@ -29,7 +32,7 @@ namespace SP_Tetris
 
             MoveTetro();
         }
-        static void PickTetro()
+        public static void PickTetro()
         {
             Random rnd = new Random();
             int random = rnd.Next(1, 8);
@@ -37,28 +40,35 @@ namespace SP_Tetris
             switch (random)
             {
                 case 1:
-                    Var.currentTetro = Tetromino.tetromino_I;
+                    Var.nextTetro = Tetromino.tetromino_I;
                     break;
                 case 2:
-                    Var.currentTetro = Tetromino.tetromino_L;
+                    Var.nextTetro = Tetromino.tetromino_L;
                     break;
                 case 3:
-                    Var.currentTetro = Tetromino.tetromino_J;
+                    Var.nextTetro = Tetromino.tetromino_J;
                     break;
                 case 4:
-                    Var.currentTetro = Tetromino.tetromino_O;
+                    Var.nextTetro = Tetromino.tetromino_O;
                     break;
                 case 5:
-                    Var.currentTetro = Tetromino.tetromino_S;
+                    Var.nextTetro = Tetromino.tetromino_S;
                     break;
                 case 6:
-                    Var.currentTetro = Tetromino.tetromino_T;
+                    Var.nextTetro = Tetromino.tetromino_T;
                     break;
                 case 7:
-                    Var.currentTetro = Tetromino.tetromino_Z;
+                    Var.nextTetro = Tetromino.tetromino_Z;
                     break;
+             }
+
+            if(Var.currentTetro == null)
+            {
+                Var.currentTetro = Var.nextTetro;
+                PickTetro();
             }
         }
+
 
         public static void MoveTetro()
         {
@@ -75,7 +85,9 @@ namespace SP_Tetris
 
         public static void TetroFall()
         {
-            if (CheckCollisionDown())
+            CheckGameOver();
+            
+            if (CheckCollisionDown() && !Var.gameOver)
             {
                 Var.currentTetroyPos++;
                 MoveTetro();
@@ -85,6 +97,7 @@ namespace SP_Tetris
                 PlaceTetro();
                 CheckFilledRows();
             }
+
         }
 
         public static void TetroMoveLeft()
@@ -160,6 +173,7 @@ namespace SP_Tetris
                         break;
                 }
             }
+
             else if (Var.currentTetroWidth == 4 || Var.currentTetroHeight == 4) //tetromino je 4x1
             {
                 switch (Var.tetroRotation)
@@ -379,6 +393,20 @@ namespace SP_Tetris
             for (int i = 0; i < Var.boardWidth; i++)
             {
                 Var.boardArray[i, 0] = 0;
+            }
+        }
+
+        public static void CheckGameOver()
+        {
+            if (Var.currentTetroyPos == 0 && !CheckCollisionDown())
+            {
+                ClearTetroArray();
+                ClearBoardArray();
+                ClearCurrentTetro();
+               
+                Var.gameOver = true;
+
+                MessageBox.Show("GAME OVER");
             }
         }
 
