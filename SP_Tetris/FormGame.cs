@@ -1,75 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿/* SP_Tetris
+ * Seminar paper - Tetris in C# and Windows Forms
+ * Matyas Strelec, 04/2021
+ * mstrlc.eu
+ */
+
+using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SP_Tetris
 {
-    public partial class Form1 : Form
+    public partial class FormGame : Form
     {
         public static class Var
         {
-            public static int boardWidth;           //sirka desky
-            public static int boardHeight;          //vyska desky
+            public static int boardWidth;           // Game board width
+            public static int boardHeight;          // Game board height
 
-            public static int[,] tetroArray;        //pole ve kterem se pohybuje currentTetro
-            public static int[,] boardArray;        //pole hry ve kterem jsou uz polozena tetromina
+            public static int[,] tetroArray;        // Array where the current tetromino is moving in
+            public static int[,] boardArray;        // Array storing already placed tetrominos
 
-            public static int[,] currentTetro;      //prave pouzivane tetromino
-            public static int currentTetroWidth;    //sirka desky
-            public static int currentTetroHeight;   //vyska desky
+            public static int[,] currentTetro;      // Current tetromino shape
+            public static int currentTetroWidth;    // Width of current tetromino
+            public static int currentTetroHeight;   // Height of current tetromino
+            public static int currentTetroxPos;     // X-axis position of current tetromino
+            public static int currentTetroyPos;     // Y-axis position of current tetromino
 
-            public static int[,] nextTetro;      //prave pouzivane tetromino
-            public static int nextTetroWidth;    //sirka desky
-            public static int nextTetroHeight;   //vyska desky
+            public static int[,] nextTetro;         // Next tetromino shape
+            public static int nextTetroWidth;       // Width of next tetromino
+            public static int nextTetroHeight;      // Height of next tetromino
 
-            public static int tetroRotation;
+            public static int defaultWaitTime = 500;// Default time to wait before tetromino falls down a block
+            public static int waitTime;             // Current time to wait before tetromino falls down a block, changes throughout the game
+            public static int score;                // Score of current game
+            
+            public static int tetroRotation;        // Rotation of current tetromino
+            public static bool isPlaced;            // State of a tetromino, if it cannot fall down anymore, it is placed
+            public static bool gameOver;            // State of the game, is true if game cannot go on
 
-            public static int[,] tempTetro;
-
-            public static int currentTetroxPos;     //x souradnice prave pouzivaneho tetromina
-            public static int currentTetroyPos;     //y souradnice prave pouzivaneho tetromina
-
-            public static int waitTime;             //cas cekani mezi pohyby, default 500
-            public static int score;
-            public static bool isPlaced;
-            public static bool gameOver;
-
-            public static int[] rowsToClear;
+            public static int rowsToClear;          // Number of rows to clear out
+            public static int rowsCleared;          // Total number of rows that have been cleared in current game
+            public static int gameLevel;            // Level of current game
         }
-        public Form1()
+
+        public FormGame()
         {
-
             InitializeComponent();
+        }
 
-            Var.boardWidth = 10;                    //definuje sirku herni desky
-            Var.boardHeight = 20;                   //definuje vysku herni desky
+        private void FormGame_Load(object sender, EventArgs e)  // Set everything up on game load
+        {
+            Var.boardWidth = 10;    // Board width and height, could theoretically be changed here. Although many other changes would need to be done
+            Var.boardHeight = 20;
 
-            Var.tetroArray = new int[Var.boardWidth, Var.boardHeight];  //inicializace arraye prave pouzivaneho tetromina
-            Var.boardArray = new int[Var.boardWidth, Var.boardHeight];  //inicializace arraye ve kterem jsou uz polozena tetromina
+            Var.tetroArray = new int[Var.boardWidth, Var.boardHeight];  // Create array for current tetromino to move in
+            Var.boardArray = new int[Var.boardWidth, Var.boardHeight];  // Create array for placed tetrominos to be stored
 
-            Var.waitTime = 800;                     //definuje cekani v milisekundach
+            Var.score = 0;  // Set default variables at the start of the game
+            Var.rowsCleared = 0;
+            Var.gameLevel = 0;
+            Var.isPlaced = false;
+            Var.gameOver = false;
 
-            ClearTetroArray();
-            InitializeDGV();
+            Var.waitTime = Var.defaultWaitTime;
 
-            Var.score = 0;
+            Var.nextTetro = GameLogic.RandomTetro();            // Pick a random tetromino as the first one
+            Var.nextTetroWidth = Var.nextTetro.GetLength(1);    // Get the tetromino's dimensions
+            Var.nextTetroHeight = Var.nextTetro.GetLength(0);
+
+            ClearTetroArray();  // Clear array before starting
+            InitializeDGV();    // Prepare the game board
 
             Draw();
+            DrawNext();
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+
+        private void FormGame_Shown(object sender, EventArgs e) // When everything is loaded and the game board is shown to the user, start the game
         {
-            switch (e.KeyCode)
+            Wait();  // Wait before starting
+            Start(); // Start the game
+        }
+
+        private void FormGame_KeyDown(object sender, KeyEventArgs e)    // Function to handle user keyboard input
+        {
+            switch (e.KeyCode)  // Depending on which key was pressed, perform actions
             {
-                case Keys.Enter:
-                    Start();
-                    break;
                 case Keys.Down:
                     Fall();
                     break;
@@ -88,76 +104,97 @@ namespace SP_Tetris
                 case Keys.Space:
                     HardDrop();
                     break;
+                case Keys.Escape:
+                    ExitGame();
+                    break;
             }
-
-            dataGridView1.CurrentCell = dataGridView1.Rows[0].Cells[0];
         }
 
-        private void Start()
+        private void Start()    // Function called at the beggining of the game and with each new tetromino
         {
-            labelScore.Text = Convert.ToString(Var.score);
+            GameLogic.CheckGameOver();  // Check for game over
 
-            Var.gameOver = false;
-
-            Game.SpawnTetro();
-            //DrawNext();
-            Draw();
-            Wait();
-            
-
-            while (!Var.isPlaced)
+            if (!Var.gameOver)  
             {
-                Fall(); 
+                labelScore.Text = Convert.ToString(Var.score);
+                labelLevel.Text = Convert.ToString(Var.gameLevel);
+                labelLines.Text = Convert.ToString(Var.rowsCleared);
+
+                GameLogic.SpawnTetro();
+                DrawNext();
                 Draw();
                 Wait();
+
+                while (!Var.isPlaced)
+                {
+                    Fall();
+                    Wait();
+                }
+
+                if (Var.isPlaced)
+                {
+                    Start();
+                }
             }
-            if (Var.isPlaced)
+            else
             {
-                Start();
-            }    
-            
+                GameOver();
+            }
         }
         private void Fall()
         {
-            Game.TetroFall();
+            GameLogic.TetroFall();
             Draw();
         }
 
         private void HardDrop()
         {
-            while(!Var.isPlaced)
+            while (!Var.isPlaced)
             {
-                Game.TetroFall();
+                GameLogic.TetroFall();
                 Draw();
             }
         }
 
         private void MoveLeft()
         {
-            Game.TetroMoveLeft();
+            GameLogic.TetroMoveLeft();
             Draw();
         }
         private void MoveRight()
         {
-            Game.TetroMoveRight();
+            GameLogic.TetroMoveRight();
             Draw();
         }
 
         private void RotateClockwise()
         {
-            Game.TetroRotateClockwise();
+            GameLogic.TetroRotateClockwise();
             Draw();
         }
         private void RotateCounterClockwise()
         {
-            Game.TetroRotateCounterClockwise();
+            GameLogic.TetroRotateCounterClockwise();
             Draw();
+        }
+
+        private void ExitGame()
+        {
+            Application.Restart();
+        }
+
+        private void GameOver()
+        {
+            this.Hide();
+            FormGameOver gameover = new FormGameOver();
+            gameover.ShowDialog();
+
         }
 
 
         public static void ClearTetroArray()
         {
-            for (int i = 0; i < Var.boardWidth; i++)     
+            for (int i = 0; i < Var.boardWidth; i++)
             {
                 for (int j = 0; j < Var.boardHeight; j++)
                 {
@@ -194,8 +231,6 @@ namespace SP_Tetris
             dataGridView1.ColumnHeadersVisible = false;
             dataGridView1.ScrollBars = ScrollBars.None;
 
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
             dataGridView1.ColumnCount = Var.boardWidth;
             dataGridView1.RowCount = Var.boardHeight;
 
@@ -203,6 +238,7 @@ namespace SP_Tetris
             {
                 for (int j = 0; j < Var.boardHeight; j++)
                 {
+                    dataGridView1.Columns[i].Width = dataGridView1.Width / Var.boardWidth;
                     dataGridView1.Rows[j].Height = dataGridView1.Height / Var.boardHeight;
                 }
             }
@@ -211,8 +247,6 @@ namespace SP_Tetris
             dataGridViewNext.ColumnHeadersVisible = false;
             dataGridViewNext.ScrollBars = ScrollBars.None;
 
-            dataGridViewNext.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
             dataGridViewNext.ColumnCount = 4;
             dataGridViewNext.RowCount = 4;
 
@@ -220,12 +254,15 @@ namespace SP_Tetris
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    dataGridViewNext.Rows[j].Height = dataGridView1.Height / 4;
+                    dataGridViewNext.Rows[j].Cells[i].Style.BackColor = Color.Black;
+                    dataGridViewNext.Columns[i].Width = dataGridViewNext.Width / 4;
+                    dataGridViewNext.Rows[j].Height = dataGridViewNext.Height / 4;
                 }
             }
         }
         private void Draw()
         {
+            dataGridView1.ClearSelection();
             dataGridView1.GridColor = Color.Black;
 
             for (int i = 0; i < Var.boardWidth; i++)
@@ -274,6 +311,7 @@ namespace SP_Tetris
         }
         private void DrawNext()
         {
+            dataGridViewNext.ClearSelection();
             dataGridViewNext.GridColor = Color.Black;
 
             for (int i = 0; i < 4; i++)
@@ -281,8 +319,22 @@ namespace SP_Tetris
                 for (int j = 0; j < 4; j++)
                 {
                     dataGridViewNext.Rows[j].Cells[i].Value = 0;
-                    dataGridViewNext.Rows[j].Cells[i].Value = Var.nextTetro[j, i];
+                }
+            }
 
+            for (int i = 0; i < Var.nextTetroWidth; i++)
+            {
+                for (int j = 0; j < Var.nextTetroHeight; j++)
+                {
+
+                    dataGridViewNext.Rows[j].Cells[i].Value = Var.nextTetro[j, i];
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
                     switch (Convert.ToInt32(dataGridViewNext.Rows[j].Cells[i].Value))
                     {
                         case 0:
@@ -312,11 +364,12 @@ namespace SP_Tetris
                     }
 
                     dataGridViewNext.Rows[j].Cells[i].Style.ForeColor = dataGridViewNext.Rows[j].Cells[i].Style.BackColor;
+                }
             }
+
         }
 
-    }
-    private void Wait()
+        private void Wait()
         {
             var timer1 = new System.Windows.Forms.Timer();
             if (Var.waitTime == 0 || Var.waitTime < 0) return;
@@ -325,7 +378,7 @@ namespace SP_Tetris
             timer1.Enabled = true;
             timer1.Start();
 
-            timer1.Tick += (s, e) =>    
+            timer1.Tick += (s, e) =>
             {
                 timer1.Enabled = false;
                 timer1.Stop();
@@ -341,5 +394,17 @@ namespace SP_Tetris
         {
             timer1.Stop();
         }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            dataGridView1.ClearSelection();
+        }
+
+        private void dataGridViewNext_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            dataGridViewNext.ClearSelection();
+
+        }
+
     }
 }

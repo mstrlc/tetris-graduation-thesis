@@ -1,76 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static SP_Tetris.Form1;
+﻿/* SP_Tetris
+ * Seminar paper - Tetris in C# and Windows Forms
+ * Matyas Strelec, 04/2021
+ * mstrlc.eu
+ */
+
+using System;
+using static SP_Tetris.FormGame;
 
 namespace SP_Tetris
 {
-    class Game
-    {   /// <summary>
-        /// Zacatek hry
-        /// </summary>
-
-        public static void SpawnTetro()
+    public class GameLogic  // Definiton of game logic and overall behavior
+    {
+        public static void SpawnTetro() // Function to spawn a new tetromino
         {
-            PickTetro();
+            Var.isPlaced = false;       // If the tetromino is placed or not
+            Var.tetroRotation = 0;      // Rotation of tetromino, can be 0, 1, 2, or 3. Each number is a 90° clockwise rotation
 
-            Var.isPlaced = false;
+            PickTetro();    // Calls a function to randomly pick a tetromino
 
-            Var.currentTetroWidth = Var.currentTetro.GetLength(1);
+            Var.currentTetroWidth = Var.currentTetro.GetLength(1);  // Get the dimensions of the current tetromino in both dimensions
             Var.currentTetroHeight = Var.currentTetro.GetLength(0);
 
-            Var.nextTetroWidth = Var.nextTetro.GetLength(1);
+            Var.nextTetroWidth = Var.nextTetro.GetLength(1);    // Get the dimensions of the next tetromino
             Var.nextTetroHeight = Var.nextTetro.GetLength(0);
 
-            Var.currentTetroxPos = 4;
-            Var.currentTetroyPos = 0;
+            switch (Var.currentTetroWidth)  // Decide at which position on the x-axis to spawn the tetromino based on its width
+            {
+                case 2:
+                    Var.currentTetroxPos = 4;
+                    break;
+                case 3:
+                    Var.currentTetroxPos = 3;
+                    break;
+                case 4:
+                    Var.currentTetroxPos = 3;
+                    break;
+            }
 
-            Var.tetroRotation = 0;
+            Var.currentTetroyPos = 0;   // Set the current tetromino to the very top of the board
 
-            MoveTetro();
+            MoveTetro();    // Call function to move tetromino
         }
-        public static void PickTetro()
+
+        public static void PickTetro()  // Function to get next tetromino
+        {
+            Var.currentTetro = Var.nextTetro;   // The tetro from the stack is moved up to current tetromino
+            Var.nextTetro = RandomTetro();      // Next tetromino is randomly picked - this is needed to display the upcoming tetromino in game
+        }
+
+        public static int[,] RandomTetro()  // Function to randomly select and return one of seven tetromino shapes 
         {
             Random rnd = new Random();
-            int random = rnd.Next(1, 8);
+            int random = rnd.Next(1, 8);    // Based on the generated random number, select and return the tetromino shape
 
             switch (random)
             {
                 case 1:
-                    Var.nextTetro = Tetromino.tetromino_I;
-                    break;
+                    return Tetromino.tetromino_I;
                 case 2:
-                    Var.nextTetro = Tetromino.tetromino_L;
-                    break;
+                    return Tetromino.tetromino_L;
                 case 3:
-                    Var.nextTetro = Tetromino.tetromino_J;
-                    break;
+                    return Tetromino.tetromino_J;
                 case 4:
-                    Var.nextTetro = Tetromino.tetromino_O;
-                    break;
+                    return Tetromino.tetromino_O;
                 case 5:
-                    Var.nextTetro = Tetromino.tetromino_S;
-                    break;
+                    return Tetromino.tetromino_S;
                 case 6:
-                    Var.nextTetro = Tetromino.tetromino_T;
-                    break;
+                    return Tetromino.tetromino_T;
                 case 7:
-                    Var.nextTetro = Tetromino.tetromino_Z;
-                    break;
-             }
-
-            if(Var.currentTetro == null)
-            {
-                Var.currentTetro = Var.nextTetro;
-                PickTetro();
+                    return Tetromino.tetromino_Z;
             }
+
+            return null;
         }
 
-
-        public static void MoveTetro()
+        public static void MoveTetro()  // Function to move the tetromino
         {
             ClearTetroArray();
 
@@ -86,7 +90,7 @@ namespace SP_Tetris
         public static void TetroFall()
         {
             CheckGameOver();
-            
+
             if (CheckCollisionDown() && !Var.gameOver)
             {
                 Var.currentTetroyPos++;
@@ -108,6 +112,7 @@ namespace SP_Tetris
             }
             MoveTetro();
         }
+
         public static void TetroMoveRight()
         {
             if (CheckCollisionRight())
@@ -119,29 +124,30 @@ namespace SP_Tetris
 
         public static void TetroRotateClockwise()
         {
-            int width;
-            int height;
-            int[,] newTetro;
+            int[,] newTetro = null;
 
-            width = Var.currentTetro.GetUpperBound(0) + 1;
-            height = Var.currentTetro.GetUpperBound(1) + 1;
-            newTetro = new int[height, width];
-
-            for (int row = 0; row < height; row++)
+            try
             {
-                for (int col = 0; col < width; col++)
+                newTetro = new int[Var.currentTetroWidth, Var.currentTetroHeight];
+            }
+            catch (StackOverflowException)
+            {
+                SpawnTetro();
+            }
+
+            for (int row = 0; row < Var.currentTetroWidth; row++)
+            {
+                for (int col = 0; col < Var.currentTetroHeight; col++)
                 {
                     int newRow;
                     int newCol;
 
-                    newRow = width - (col + 1);
+                    newRow = Var.currentTetroHeight - (col + 1);
                     newCol = row;
 
                     newTetro[newCol, newRow] = Var.currentTetro[col, row];
                 }
             }
-
-            Var.tempTetro = Var.currentTetro;
 
             Var.currentTetro = newTetro;
 
@@ -201,7 +207,6 @@ namespace SP_Tetris
                 }
             }
 
-
             Var.currentTetroWidth = Var.currentTetro.GetLength(1);
             Var.currentTetroHeight = Var.currentTetro.GetLength(0);
 
@@ -220,7 +225,14 @@ namespace SP_Tetris
                 {
                     if (Var.tetroArray[i, j] != 0 && Var.boardArray[i, j] != 0)
                     {
-                        TetroRotateCounterClockwise();
+                        try
+                        {
+                            TetroRotateCounterClockwise();
+                        }
+                        catch (Exception)
+                        {
+                            SpawnTetro();
+                        }
                     }
                 }
             }
@@ -229,29 +241,30 @@ namespace SP_Tetris
 
         public static void TetroRotateCounterClockwise()
         {
-            int width;
-            int height;
-            int[,] newTetro;
+            int[,] newTetro = null;
 
-            width = Var.currentTetro.GetUpperBound(0) + 1;
-            height = Var.currentTetro.GetUpperBound(1) + 1;
-            newTetro = new int[height, width];
-
-            for (int row = 0; row < height; row++)
+            try
             {
-                for (int col = 0; col < width; col++)
+                newTetro = new int[Var.currentTetroWidth, Var.currentTetroHeight];
+            }
+            catch (StackOverflowException)
+            {
+                SpawnTetro();
+            }
+
+            for (int row = 0; row < Var.currentTetroWidth; row++)
+            {
+                for (int col = 0; col < Var.currentTetroHeight; col++)
                 {
                     int newRow;
                     int newCol;
 
                     newRow = col;
-                    newCol = height - (row + 1);
+                    newCol = Var.currentTetroWidth - (row + 1);
 
                     newTetro[newCol, newRow] = Var.currentTetro[col, row];
                 }
             }
-
-            Var.tempTetro = Var.currentTetro;
 
             Var.currentTetro = newTetro;
 
@@ -328,7 +341,14 @@ namespace SP_Tetris
                 {
                     if (Var.tetroArray[i, j] != 0 && Var.boardArray[i, j] != 0)
                     {
-                        TetroRotateClockwise();
+                        try
+                        {
+                            TetroRotateClockwise();
+                        }
+                        catch (Exception)
+                        {
+                            SpawnTetro();
+                        }
                     }
                 }
             }
@@ -336,7 +356,7 @@ namespace SP_Tetris
 
         }
 
-        public static void PlaceTetro()
+        static void PlaceTetro()
         {
             for (int i = 0; i < Var.boardWidth; i++)
             {
@@ -348,7 +368,7 @@ namespace SP_Tetris
                     }
                 }
             }
-            
+
             ClearTetroArray();
 
             Var.isPlaced = true;
@@ -356,6 +376,8 @@ namespace SP_Tetris
 
         public static void CheckFilledRows()
         {
+            Var.rowsToClear = 0;
+
             for (int h = 0; h < Var.boardHeight; h++)
             {
                 bool isFilled = true;
@@ -368,23 +390,21 @@ namespace SP_Tetris
                     }
                 }
 
-                if(isFilled)
+                if (isFilled)
                 {
+                    Var.rowsToClear += 1;
+                    Var.rowsCleared += 1;
                     ClearRow(h);
-                    Var.score += 100;
-                    if(Var.waitTime > 100)
-                    {
-                        Var.waitTime -= 50;
-                    }
                 }
             }
+
         }
 
         public static void ClearRow(int row)
         {
             for (int i = row; i > 0; i--)
             {
-                for(int j = 0; j < Var.boardWidth; j++)
+                for (int j = 0; j < Var.boardWidth; j++)
                 {
                     Var.boardArray[j, i] = Var.boardArray[j, i - 1];
                 }
@@ -394,6 +414,30 @@ namespace SP_Tetris
             {
                 Var.boardArray[i, 0] = 0;
             }
+
+            Var.gameLevel = Var.rowsCleared / 5;
+
+            switch (Var.rowsToClear)
+            {
+                case 1:
+                    Var.score += (Var.gameLevel + 1) * 40;
+                    break;
+                case 2:
+                    Var.score += (Var.gameLevel + 1) * 100;
+                    break;
+                case 3:
+                    Var.score += (Var.gameLevel + 1) * 300;
+                    break;
+                case 4:
+                    Var.score += (Var.gameLevel + 1) * 1200;
+                    break;
+            }
+
+            if ((Var.gameLevel * 30) > 450)
+            {
+                Var.waitTime = Var.defaultWaitTime - (Var.gameLevel * 30);
+            }
+
         }
 
         public static void CheckGameOver()
@@ -403,10 +447,11 @@ namespace SP_Tetris
                 ClearTetroArray();
                 ClearBoardArray();
                 ClearCurrentTetro();
-               
-                Var.gameOver = true;
 
-                MessageBox.Show("GAME OVER");
+                Var.currentTetro = null;
+                Var.nextTetro = null;
+
+                Var.gameOver = true;
             }
         }
 
@@ -416,7 +461,7 @@ namespace SP_Tetris
             {
                 for (int j = 0; j < Var.boardHeight; j++)
                 {
-                    if(Var.currentTetroyPos + Var.currentTetroHeight + 1 > Var.boardHeight)
+                    if (Var.currentTetroyPos + Var.currentTetroHeight + 1 > Var.boardHeight)
                     {
                         return false;
                     }
@@ -447,7 +492,7 @@ namespace SP_Tetris
 
                 }
             }
-            
+
             return true;
         }
 

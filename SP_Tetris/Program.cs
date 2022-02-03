@@ -1,7 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿/* SP_Tetris
+ * Seminar paper - Tetris in C# and Windows Forms
+ * Matyas Strelec, 04/2021
+ * mstrlc.eu
+ */
+
+using System;
 using System.Windows.Forms;
 
 namespace SP_Tetris
@@ -16,7 +19,7 @@ namespace SP_Tetris
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new FormTitle());
         }
     }
 }
